@@ -16,6 +16,32 @@ func main() {
 		panic(err)
 	}
 
+	// fmt.Printf("total distance: %d\n", computeTotalDistance(l1, l2))
+	fmt.Printf("total similiarity score: %d\n", computeSimiliarityScore(l1, l2))
+}
+
+func computeSimiliarityScore(l1, l2 []int) int {
+	similiarity := make(map[int]int)
+	for _, n1 := range l1 {
+		var count int
+		for _, n2 := range l2 {
+			if n1 == n2 {
+				count++
+			}
+		}
+
+		similiarity[n1] += count
+	}
+
+	var totalScore int
+	for k, v := range similiarity {
+		totalScore += k * v
+	}
+
+	return totalScore
+}
+
+func computeTotalDistance(l1, l2 []int) int {
 	sort.Ints(l1)
 	sort.Ints(l2)
 
@@ -29,7 +55,7 @@ func main() {
 		totalDistance += diff
 	}
 
-	fmt.Printf("total distance: %d\n", totalDistance)
+	return totalDistance
 }
 
 func getLists(input io.Reader) ([]int, []int, error) {
