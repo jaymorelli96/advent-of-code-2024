@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -13,65 +14,28 @@ func main() {
 
 	var safeCount int
 
-reports:
+	dampenerPossibilities := []func([]string, int) []string{
+		func(r []string, l int) []string { return slices.Delete(slices.Clone(r), l-1, l) }, // remove current level
+		func(r []string, l int) []string { return slices.Delete(slices.Clone(r), l, l+1) }, // remove next level
+		func(r []string, _ int) []string { return slices.Delete(slices.Clone(r), 0, 1) },   // remove first level
+	}
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		report := strings.Fields(line)
 
-		firstLevel, err := strconv.Atoi(report[0])
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "error reading input:", err)
-			return
+		isSafe, level := processReport(report)
+		for _, dampener := range dampenerPossibilities {
+			if isSafe {
+				break
+			}
+
+			isSafe, _ = processReport(dampener(report, level))
 		}
 
-		secondLevel, err := strconv.Atoi(report[1])
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "error reading input:", err)
-			return
+		if isSafe {
+			safeCount++
 		}
-
-		var isIncreasing bool
-
-		if firstLevel-secondLevel < 0 {
-			isIncreasing = true
-		}
-
-		for i := 1; i < len(report); i++ {
-			currentLevel, err := strconv.Atoi(report[i-1])
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "error reading input:", err)
-				return
-			}
-
-			nextLevel, err := strconv.Atoi(report[i])
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "error reading input:", err)
-				return
-			}
-
-			if currentLevel-nextLevel == 0 {
-				fmt.Printf("line: %s, not safe is neither an increase or decrease\n", line)
-				continue reports
-			}
-
-			if isIncreasing && currentLevel-nextLevel > 0 {
-				fmt.Printf("line: %s, not safe should be increasing\n", line)
-				continue reports
-			}
-
-			if !isIncreasing && currentLevel-nextLevel < 0 {
-				fmt.Printf("line: %s, not safe should be decreasing\n", line)
-				continue reports
-			}
-
-			if absInt(currentLevel-nextLevel) > 3 {
-				fmt.Printf("line: %s, not safe\n", line)
-				continue reports
-			}
-
-		}
-
-		safeCount++
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -79,6 +43,53 @@ reports:
 	}
 
 	fmt.Printf("safe count: %d\n", safeCount)
+}
+
+func processReport(report []string) (bool, int) {
+	firstLevel, err := strconv.Atoi(report[0])
+	if err != nil {
+		panic(err)
+	}
+
+	secondLevel, err := strconv.Atoi(report[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error reading input:", err)
+		panic(err)
+	}
+	var isIncreasing bool
+
+	if firstLevel-secondLevel < 0 {
+		isIncreasing = true
+	}
+	for i := 1; i < len(report); i++ {
+		currentLevel, err := strconv.Atoi(report[i-1])
+		if err != nil {
+			panic(err)
+		}
+
+		nextLevel, err := strconv.Atoi(report[i])
+		if err != nil {
+			panic(err)
+		}
+
+		if currentLevel-nextLevel == 0 {
+			return false, i
+		}
+
+		if isIncreasing && currentLevel-nextLevel > 0 {
+			return false, i
+		}
+
+		if !isIncreasing && currentLevel-nextLevel < 0 {
+			return false, i
+		}
+
+		if absInt(currentLevel-nextLevel) > 3 {
+			return false, i
+		}
+	}
+
+	return true, -1
 }
 
 func absInt(x int) int {
