@@ -1,16 +1,17 @@
-package main
+package daytwo
 
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-func main() {
-	scanner := bufio.NewScanner(os.Stdin)
+func Run(input io.Reader) string {
+	scanner := bufio.NewScanner(input)
 
 	var safeCount int
 
@@ -42,7 +43,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error reading input:", err)
 	}
 
-	fmt.Printf("safe count: %d\n", safeCount)
+	return fmt.Sprintf("safe count with dampener: %d\n", safeCount)
 }
 
 func processReport(report []string) (bool, int) {

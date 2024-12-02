@@ -1,23 +1,26 @@
-package main
+package dayone
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
 )
 
-func main() {
-	l1, l2, err := getLists(os.Stdin)
+func Run(input io.Reader) string {
+	l1, l2, err := getLists(input)
 	if err != nil {
 		panic(err)
 	}
 
-	// fmt.Printf("total distance: %d\n", computeTotalDistance(l1, l2))
-	fmt.Printf("total similiarity score: %d\n", computeSimiliarityScore(l1, l2))
+	res := fmt.Sprintf(
+		"total distance: %d\ntotal similiarity score: %d\n",
+		computeTotalDistance(l1, l2),
+		computeSimiliarityScore(l1, l2),
+	)
+	return res
 }
 
 func computeSimiliarityScore(l1, l2 []int) int {
