@@ -8,7 +8,10 @@ import (
 	"strings"
 )
 
-const word = "XMAS"
+const (
+	word        = "XMAS"
+	focusLetter = "X"
+)
 
 func Run(input io.Reader) string {
 	scanner := bufio.NewScanner(input)
@@ -29,11 +32,15 @@ func Run(input io.Reader) string {
 	for i := range matrix {
 		for j := range matrix[i] {
 			// potential word matching
-			if matrix[i][j] == string(word[0]) {
-				totalCount += matrixRightDown(matrix, i, i+len(word), j, j+len(word))
-				totalCount += matrixRightUp(matrix, i, i-len(word)+1, j, j+len(word))
-				totalCount += matrixLeftDown(matrix, i, i+len(word), j, j-len(word)+1)
-				totalCount += matrixLeftUp(matrix, i, i-len(word)+1, j, j-len(word)+1)
+			if matrix[i][j] == focusLetter {
+				h1, v1, d1 := matrixRightDown(matrix, i, i+len(word), j, j+len(word))
+				totalCount += countWordsInAllDirections(word, h1, v1, d1)
+				_, v2, d2 := matrixRightUp(matrix, i, i-len(word)+1, j, j+len(word))
+				totalCount += countWordsInAllDirections(word, "", v2, d2)
+				h3, _, d3 := matrixLeftDown(matrix, i, i+len(word), j, j-len(word)+1)
+				totalCount += countWordsInAllDirections(word, h3, "", d3)
+				_, _, d4 := matrixLeftUp(matrix, i, i-len(word)+1, j, j-len(word)+1)
+				totalCount += countWordsInAllDirections(word, "", "", d4)
 			}
 		}
 	}
@@ -41,7 +48,7 @@ func Run(input io.Reader) string {
 	return fmt.Sprintf("total apperance of the word %s is = %d", word, totalCount)
 }
 
-func matrixRightDown(m [][]string, rowStart, rowFinish, colStart, colFinish int) int {
+func matrixRightDown(m [][]string, rowStart, rowFinish, colStart, colFinish int) (string, string, string) {
 	var horizontal strings.Builder
 	var vertical strings.Builder
 	var diagonal strings.Builder
@@ -68,10 +75,10 @@ func matrixRightDown(m [][]string, rowStart, rowFinish, colStart, colFinish int)
 		di++
 	}
 
-	return countWordsInAllDirections(word, horizontal.String(), vertical.String(), diagonal.String())
+	return horizontal.String(), vertical.String(), diagonal.String()
 }
 
-func matrixRightUp(m [][]string, rowStart, rowFinish, colStart, colFinish int) int {
+func matrixRightUp(m [][]string, rowStart, rowFinish, colStart, colFinish int) (string, string, string) {
 	var horizontal strings.Builder
 	var vertical strings.Builder
 	var diagonal strings.Builder
@@ -98,10 +105,10 @@ func matrixRightUp(m [][]string, rowStart, rowFinish, colStart, colFinish int) i
 		di++
 	}
 
-	return countWordsInAllDirections(word, "", vertical.String(), diagonal.String())
+	return horizontal.String(), vertical.String(), diagonal.String()
 }
 
-func matrixLeftDown(m [][]string, rowStart, rowFinish, colStart, colFinish int) int {
+func matrixLeftDown(m [][]string, rowStart, rowFinish, colStart, colFinish int) (string, string, string) {
 	var horizontal strings.Builder
 	var vertical strings.Builder
 	var diagonal strings.Builder
@@ -128,10 +135,10 @@ func matrixLeftDown(m [][]string, rowStart, rowFinish, colStart, colFinish int) 
 		di++
 	}
 
-	return countWordsInAllDirections(word, horizontal.String(), "", diagonal.String())
+	return horizontal.String(), vertical.String(), diagonal.String()
 }
 
-func matrixLeftUp(m [][]string, rowStart, rowFinish, colStart, colFinish int) int {
+func matrixLeftUp(m [][]string, rowStart, rowFinish, colStart, colFinish int) (string, string, string) {
 	var horizontal strings.Builder
 	var vertical strings.Builder
 	var diagonal strings.Builder
@@ -158,7 +165,7 @@ func matrixLeftUp(m [][]string, rowStart, rowFinish, colStart, colFinish int) in
 		di++
 	}
 
-	return countWordsInAllDirections(word, "", "", diagonal.String())
+	return horizontal.String(), vertical.String(), diagonal.String()
 }
 
 func countWordsInAllDirections(word, horizontal, vertical, diagonal string) int {
