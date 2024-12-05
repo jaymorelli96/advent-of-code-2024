@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -56,11 +57,55 @@ func Run(input io.Reader) string {
 	for k, v := range mustComeBefore {
 		fmt.Printf("%d must come before: %v\n", k, v)
 	}
-	for k, v := range mustComeAfter {
-		fmt.Printf("%d must come after: %v\n", k, v)
+
+	return fmt.Sprintf("part 2 is: %v", p2(mustComeBefore, mustComeAfter, updates))
+}
+
+func p2(mustComeBefore, mustComeAfter map[int][]int, updates [][]int) [][]int {
+	var count int
+
+	notValids := getUpdatesNotValid(mustComeAfter, updates)
+	sorted := make([][]int, 0)
+
+	for _, update := range notValids {
+		fmt.Printf("before sorting not valid %v\n", update)
+		res := sortByRestriction(mustComeBefore, update)
+		sorted = append(sorted, res)
+		count += res[len(res)/2]
+		fmt.Printf("after sorting not valid %v\n", sorted)
 	}
 
-	return fmt.Sprintf("part 1 is: %d", p1(mustComeAfter, updates))
+	fmt.Println("count", count)
+	return sorted
+}
+
+func sortByRestriction(mustComeBefore map[int][]int, update []int) []int {
+	slices.SortFunc(update, func(a, b int) int {
+		if slices.Contains(mustComeBefore[a], b) {
+			return -1
+		} else {
+			return 1
+		}
+	})
+
+	return update
+}
+
+func getUpdatesNotValid(mustComeAfter map[int][]int, updates [][]int) [][]int {
+	notValid := make([][]int, 0, len(updates))
+
+	for _, update := range updates {
+		for i, n := range update {
+			after := mustComeAfter[n] // this numbers cannot be at the rest of the slice
+			if doesViolate(update[i:], after) {
+				fmt.Printf("update %v violates --- the problem is the %d\n", update, n)
+				notValid = append(notValid, update)
+				break
+			}
+		}
+	}
+
+	return notValid
 }
 
 func p1(mustComeAfter map[int][]int, updates [][]int) int {
