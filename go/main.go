@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/jaymorelli96/advent-of-code-2024/go/day5"
 	"github.com/jaymorelli96/advent-of-code-2024/go/dayfour"
 	"github.com/jaymorelli96/advent-of-code-2024/go/dayone"
 	"github.com/jaymorelli96/advent-of-code-2024/go/daythree"
@@ -14,7 +15,7 @@ import (
 
 func main() {
 	path := flag.String("file", "", "file path to run use cases, if omitted it will read from stdin")
-	day := flag.String("day", "four", "define which day (challenge) to run")
+	day := flag.String("day", "five", "define which day (challenge) to run")
 	flag.Parse()
 
 	var r io.Reader
@@ -35,6 +36,7 @@ func main() {
 		"two":   func(r io.Reader) string { return daytwo.Run(r) },
 		"three": func(r io.Reader) string { return daythree.Run(r) },
 		"four":  func(r io.Reader) string { return dayfour.Run(r) },
+		"five":  func(r io.Reader) string { return day5.Run(r) },
 	}
 
 	fmt.Println(adventOfCode[*day](r))
